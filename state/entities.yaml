@@ -1,1 +1,31 @@
+entities:
+  - id: tata_steel
+    name: Tata Steel
+    type: company
+    queries:
+      - "Tata Steel"
+      - "TATASTEEL"
+    sources:
+      - rss
+      - web
+
+  - id: ipcpa
+    name: Indian Primary Copper Producers Association
+    type: institution
+    queries:
+      - "IPCPA"
+      - "\"Indian Primary Copper Producers Association\""
+    sources:
+      - rss
+      - web
+
+  - id: naveen_jindal
+    name: Naveen Jindal
+    type: person
+    queries:
+      - "\"Naveen Jindal\""
+      - "Naveen Jindal steel"
+    sources:
+      - rss
+      - web
 
