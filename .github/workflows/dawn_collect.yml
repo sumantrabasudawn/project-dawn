@@ -22,9 +22,18 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Run collector
+      - name: Debug paths + run collector
         run: |
-          python connectors/runner.py
+          echo "GITHUB_WORKSPACE=$GITHUB_WORKSPACE"
+          echo "PWD=$(pwd)"
+          echo "Listing repo root:"
+          ls -la
+          echo "Listing connectors:"
+          ls -la connectors || true
+          echo "Find runner.py:"
+          find . -maxdepth 4 -name "runner.py" -print
+          echo "Run via workspace absolute path:"
+          python "$GITHUB_WORKSPACE/connectors/runner.py"
 
       - name: Upload output
         uses: actions/upload-artifact@v4
