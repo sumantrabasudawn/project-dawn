@@ -1,0 +1,3 @@
+default:
+  - https://news.google.com/rss/search?q={query}&hl=en-IN&gl=IN&ceid=IN:en
+  - https://news.google.com/rss/search?q={query}&hl=en&gl=US&ceid=US:en
