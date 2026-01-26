@@ -1,3 +1,9 @@
+# ==========================================
+# Project DAWN – Streamlit Interface
+# Role: Interface layer (UI only)
+# Data source: /data (live or last-good)
+# ==========================================
+
 from __future__ import annotations
 
 from datetime import datetime
