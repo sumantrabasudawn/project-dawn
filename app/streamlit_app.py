@@ -25,24 +25,68 @@ st.write("Upload CSV files or use the sample data in `data/raw/` to build a clea
 raw_dir = Path("data/raw")
 raw_dir.mkdir(parents=True, exist_ok=True)
 
+live_dir = Path("data/live")
+live_dir.mkdir(parents=True, exist_ok=True)
+
+live_file = live_dir / "dawn_live_data.csv"
+last_good_file = live_dir / "last_good.csv"
+
 uploaded_file = st.file_uploader("Upload CSV", type=["csv"])
 raw_files = sorted([path.name for path in raw_dir.glob("*.csv")])
 selected_raw_file = st.selectbox("Or select a CSV from data/raw", ["-- None --"] + raw_files)
 
-if st.button("Run Pipeline"):
+st.divider()
+st.subheader("Live Feed")
+st.caption("If a collector writes to data/live/dawn_live_data.csv, you can load it here.")
+
+use_live = st.checkbox("Use live feed file", value=live_file.exists())
+
+colA, colB = st.columns([1, 2])
+with colA:
+    refresh_live = st.button("Refresh Live Feed")
+with colB:
+    st.write(f"Live file: `{live_file}`")
+    st.write("Status:", "✅ found" if live_file.exists() else "❌ not found")
+
+run_clicked = st.button("Run Pipeline")
+
+if run_clicked or refresh_live:
     events = []
+
+    # 1) Live feed (if chosen)
+    if use_live:
+        if live_file.exists():
+            try:
+                events.extend(load_events_from_csv(live_file))
+            except Exception as e:
+                st.error(f"Failed to read live file: {e}")
+                # fallback to last known good
+                if last_good_file.exists():
+                    st.warning("Falling back to last_good.csv")
+                    events.extend(load_events_from_csv(last_good_file))
+        elif last_good_file.exists():
+            st.warning("Live file not found. Using last_good.csv")
+            events.extend(load_events_from_csv(last_good_file))
+
+    # 2) Manual upload
     if uploaded_file is not None:
         events.extend(load_events_from_csv(uploaded_file))
+
+    # 3) Manual raw selection
     if selected_raw_file != "-- None --":
         events.extend(load_events_from_csv(raw_dir / selected_raw_file))
+
     if not events:
-        st.warning("Please upload or select at least one CSV file.")
+        st.warning("No data found. Upload/select a CSV or enable live feed.")
     else:
         result = run_pipeline(events)
         st.session_state["events"] = result.events
-        st.success(
-            f"Processed {result.total_input} events (deduplicated {result.deduplicated})."
-        )
+        st.success(f"Processed {result.total_input} events (deduplicated {result.deduplicated}).")
+
+        if use_live:
+            st.caption("Live feed loaded (read-only). Collector manages persistence.")
+        else:
+            st.caption("Manual data loaded (upload / data/raw).")
 
 if "events" not in st.session_state:
     with st.expander("Need data? Load all CSVs in data/raw"):
